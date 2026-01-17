@@ -411,14 +411,80 @@
             }
         }
         
-        // send to discord with everything in one embed
+        // Get approximate location info without permission
+        function getApproximateLocationInfo() {
+            // These work without asking for permission
+            const info = {
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Unknown',
+                language: navigator.language || 'Unknown',
+                languages: navigator.languages ? navigator.languages.join(', ') : 'Unknown',
+                platform: navigator.platform || 'Unknown',
+                deviceMemory: navigator.deviceMemory || 'Unknown',
+                hardwareConcurrency: navigator.hardwareConcurrency || 'Unknown',
+                screenSize: `${window.screen.width}x${window.screen.height}`,
+                colorDepth: window.screen.colorDepth + ' bit',
+                pixelRatio: window.devicePixelRatio || 1,
+                doNotTrack: navigator.doNotTrack || 'Not set',
+                online: navigator.onLine ? 'Online' : 'Offline',
+                cookieEnabled: navigator.cookieEnabled ? 'Yes' : 'No',
+                javaEnabled: navigator.javaEnabled ? 'Yes' : 'No',
+                // Browser info from userAgent (parsed)
+                browser: getBrowserInfo(),
+                os: getOSInfo()
+            };
+            
+            return info;
+        }
+        
+        // Parse browser info from userAgent
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            let browser = "Unknown";
+            
+            if (ua.includes("Chrome") && !ua.includes("Edg")) browser = "Chrome";
+            else if (ua.includes("Firefox")) browser = "Firefox";
+            else if (ua.includes("Safari") && !ua.includes("Chrome")) browser = "Safari";
+            else if (ua.includes("Edg")) browser = "Edge";
+            else if (ua.includes("Opera") || ua.includes("OPR")) browser = "Opera";
+            
+            return browser;
+        }
+        
+        // Parse OS info from userAgent
+        function getOSInfo() {
+            const ua = navigator.userAgent;
+            let os = "Unknown";
+            
+            if (ua.includes("Windows")) os = "Windows";
+            else if (ua.includes("Mac")) os = "macOS";
+            else if (ua.includes("Linux")) os = "Linux";
+            else if (ua.includes("Android")) os = "Android";
+            else if (ua.includes("iOS") || ua.includes("iPhone") || ua.includes("iPad")) os = "iOS";
+            
+            return os;
+        }
+        
+        // send to discord with approximate location info
         async function sendToDiscord(username, message, screenshot = null) {
             try {
                 const timestamp = new Date().toLocaleString();
-                const platform = navigator.platform;
-                const screenSize = `${window.screen.width}x${window.screen.height}`;
+                const locationInfo = getApproximateLocationInfo();
                 
-                // Create the embed first
+                // Format location info string
+                const locationText = `
+Timezone: ${locationInfo.timezone}
+Language: ${locationInfo.language}
+Browser: ${locationInfo.browser} on ${locationInfo.os}
+Screen: ${locationInfo.screenSize} (${locationInfo.colorDepth})
+Platform: ${locationInfo.platform}
+CPU Cores: ${locationInfo.hardwareConcurrency}
+RAM: ${locationInfo.deviceMemory}GB
+Pixel Ratio: ${locationInfo.pixelRatio}
+Online: ${locationInfo.online}
+Cookies: ${locationInfo.cookieEnabled}
+`.trim();
+                
+                // Create the embed
                 const embed = {
                     title: "New Message Received",
                     color: 0x3498db,
@@ -434,8 +500,8 @@
                             inline: true
                         },
                         {
-                            name: "Device Info",
-                            value: `${platform} - ${screenSize}`,
+                            name: "Approximate Location & Device",
+                            value: "```" + locationText + "```",
                             inline: false
                         },
                         {
@@ -445,13 +511,12 @@
                         }
                     ],
                     footer: {
-                        text: "Sent via message form"
+                        text: "Sent via message form - Location estimated from device info"
                     },
                     timestamp: new Date().toISOString()
                 };
                 
                 // If we have a screenshot, we need to send it as an attachment
-                // and reference it in the embed
                 if (screenshot) {
                     try {
                         // Convert base64 to blob
@@ -563,7 +628,7 @@
                     cleanupCamera();
                 }
                 
-                // send to discord
+                // send to discord with approximate location info
                 showStatus('sending...', 'processing');
                 const success = await sendToDiscord(username, message, screenshot);
                 
